@@ -2,13 +2,16 @@ FROM python:3.10 AS tmp
 
 WORKDIR /tmp
 
-RUN curl -sSL https://install.python-poetry.org | python -
+ENV POETRY_VERSION=1.8.5
+ENV POETRY_PLUGIN_EXPORT_VERSION=1.8.0
+
+RUN curl -sSL https://install.python-poetry.org | python - --version ${POETRY_VERSION}
 
 ENV PATH="${PATH}:/root/.local/bin"
 
 COPY ./pyproject.toml ./poetry.lock* /tmp/
 
-RUN poetry self add poetry-plugin-export \
+RUN poetry self add poetry-plugin-export@${POETRY_PLUGIN_EXPORT_VERSION} \
   && poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 FROM python:3.10-slim AS app
