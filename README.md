@@ -60,6 +60,20 @@ POST /memes/reload
 
 其中 `count` 表示重载完成后当前已注册的表情数量
 
+## Docker 镜像发布
+
+仓库自带 Docker workflow，提交到 `main` 后会自动构建镜像并发布到：
+
+- `ghcr.io/<owner>/<repo>`
+
+如果你还想同时发布到 Docker Hub，可以在仓库里额外配置：
+
+- Repository variable：`DOCKERHUB_IMAGE`
+- Repository secret：`DOCKERHUB_USERNAME`
+- Repository secret：`DOCKERHUB_TOKEN`
+
+不配置这些值时，workflow 会只发布到 `GHCR`
+
 ## 已知问题
 
 - Windows 下程序无报错退出
