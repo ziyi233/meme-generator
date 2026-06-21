@@ -41,6 +41,25 @@ _✨ 表情包生成器，用于制作各种沙雕表情包 ✨_
 - [anyliew/meme_emoji](https://github.com/anyliew/meme_emoji) 更多热门表情包模板
 - [LRZ9712/tudou-meme](https://github.com/LRZ9712/tudou-meme) 手搓的一些表情包模版
 
+## 重载表情
+
+当你通过 `meme_dirs` 挂载了额外表情仓库后，可以调用下面的接口重新加载表情，而不必重启整个服务：
+
+```text
+POST /memes/reload
+```
+
+返回示例：
+
+```json
+{
+  "ok": true,
+  "count": 123
+}
+```
+
+其中 `count` 表示重载完成后当前已注册的表情数量
+
 ## 已知问题
 
 - Windows 下程序无报错退出

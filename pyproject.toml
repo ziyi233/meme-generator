@@ -33,6 +33,7 @@ arclet-alconna-tools = "^0.7.9"
 skia-python = ">=138.0"
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
 
 [tool.poetry.scripts]
 meme = "meme_generator.cli:main"

@@ -1,6 +1,7 @@
 import importlib
 import importlib.util
 import pkgutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
@@ -55,6 +56,30 @@ def load_memes(dir_path: Union[str, Path]):
             logger.opt(colors=True, exception=e).error(
                 f"Failed to import {module_path}!"
             )
+
+
+def reload_memes():
+    _memes.clear()
+
+    if meme_config.meme.load_builtin_memes:
+        for path in (Path(__file__).parent / "memes").iterdir():
+            module_name = f"meme_generator.memes.{path.name}"
+            if module_name in sys.modules:
+                importlib.reload(sys.modules[module_name])
+            else:
+                load_meme(module_name)
+
+    for meme_dir in meme_config.meme.meme_dirs:
+        resolved_dir = Path(meme_dir).resolve()
+        for module_info in pkgutil.iter_modules([str(resolved_dir)]):
+            if module_info.name.startswith("_"):
+                continue
+            module_name = module_info.name
+            if module_name in sys.modules:
+                importlib.reload(sys.modules[module_name])
+                continue
+
+        load_memes(resolved_dir)
 
 
 def add_meme(

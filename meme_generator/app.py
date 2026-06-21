@@ -5,6 +5,7 @@ from typing import Any, Literal, Optional
 import filetype
 from fastapi import Depends, FastAPI, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel, ValidationError
+from starlette.routing import Route
 
 from meme_generator.compat import model_dump, model_json_schema, type_validate_python
 from meme_generator.config import meme_config
@@ -14,12 +15,13 @@ from meme_generator.exception import (
     NoSuchMeme,
 )
 from meme_generator.log import LOGGING_CONFIG, setup_logger
-from meme_generator.manager import get_meme, get_meme_keys, get_memes
+from meme_generator.manager import get_meme, get_meme_keys, get_memes, reload_memes
 from meme_generator.meme import CommandShortcut, Meme, MemeArgsModel, ParserOption
 from meme_generator.utils import MemeProperties, render_meme_list, run_sync
 from meme_generator.version import __version__
 
 app = FastAPI()
+routers_registered = False
 
 
 class MemeArgsResponse(BaseModel):
@@ -110,6 +112,10 @@ class RenderMemeListRequest(BaseModel):
 
 
 def register_routers():
+    global routers_registered
+    if routers_registered:
+        return
+
     @app.post("/memes/render_list")
     def _(params: RenderMemeListRequest = RenderMemeListRequest()):
         try:
@@ -189,6 +195,39 @@ def register_routers():
 
     for meme in sorted(get_memes(), key=lambda meme: meme.key):
         register_router(meme)
+
+    routers_registered = True
+
+
+def unregister_meme_routes():
+    preserved_routes: list[Route] = []
+    for route in app.router.routes:
+        if not isinstance(route, Route):
+            preserved_routes.append(route)
+            continue
+        if route.path == "/memes/render_list":
+            continue
+        if route.path.startswith("/memes/") and route.path.endswith("/"):
+            continue
+        preserved_routes.append(route)
+
+    app.router.routes = preserved_routes
+
+
+@app.post("/memes/reload")
+def reload_memes_endpoint():
+    global default_meme_list
+    global routers_registered
+
+    reload_memes()
+    unregister_meme_routes()
+    routers_registered = False
+    default_meme_list = [
+        MemeKeyWithProperties(meme_key=meme.key)
+        for meme in sorted(get_memes(), key=lambda meme: meme.key)
+    ]
+    register_routers()
+    return {"ok": True, "count": len(get_memes())}
 
 
 def run_server():
