@@ -17,7 +17,9 @@ from meme_generator.meme import ParserOption as ParserOption
 from meme_generator.version import __version__ as __version__
 
 if config.meme.load_builtin_memes:
-    for path in (Path(__file__).parent / "memes").iterdir():
-        load_meme(f"meme_generator.memes.{path.name}")
+    builtin_memes_dir = Path(__file__).parent / "memes"
+    if builtin_memes_dir.exists():
+        for path in builtin_memes_dir.iterdir():
+            load_meme(f"meme_generator.memes.{path.name}")
 for meme_dir in config.meme.meme_dirs:
     load_memes(meme_dir)

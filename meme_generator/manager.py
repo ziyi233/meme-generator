@@ -62,12 +62,14 @@ def reload_memes():
     _memes.clear()
 
     if meme_config.meme.load_builtin_memes:
-        for path in (Path(__file__).parent / "memes").iterdir():
-            module_name = f"meme_generator.memes.{path.name}"
-            if module_name in sys.modules:
-                importlib.reload(sys.modules[module_name])
-            else:
-                load_meme(module_name)
+        builtin_memes_dir = Path(__file__).parent / "memes"
+        if builtin_memes_dir.exists():
+            for path in builtin_memes_dir.iterdir():
+                module_name = f"meme_generator.memes.{path.name}"
+                if module_name in sys.modules:
+                    importlib.reload(sys.modules[module_name])
+                else:
+                    load_meme(module_name)
 
     for meme_dir in meme_config.meme.meme_dirs:
         resolved_dir = Path(meme_dir).resolve()

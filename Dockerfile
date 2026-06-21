@@ -43,6 +43,7 @@ RUN apt-get update \
   && pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY ./meme_generator /app/meme_generator
+RUN rm -rf /app/meme_generator/memes
 
 COPY ./docker/config.toml.template /app/config.toml.template
 COPY ./docker/start.sh /app/start.sh
